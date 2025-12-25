@@ -1,65 +1,49 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import { notFound } from "next/navigation";
+import { remark } from "remark";
+import html from "remark-html";
 
 const CONTENT_DIR = path.join(process.cwd(), "content/writing");
 
-type Post = {
-  slug: string;
-  title: string;
-  date: string;
-  summary?: string;
-};
+export default async function WritingDetail({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const filePath = path.join(CONTENT_DIR, `${params.slug}.md`);
 
-export default function WritingPage() {
-  const files = fs.readdirSync(CONTENT_DIR);
+  if (!fs.existsSync(filePath)) {
+    notFound();
+  }
 
-  const posts: Post[] = files.map((file) => {
-    const slug = file.replace(".md", "");
-    const fullPath = path.join(CONTENT_DIR, file);
-    const fileContent = fs.readFileSync(fullPath, "utf8");
-    const { data } = matter(fileContent);
+  const file = fs.readFileSync(filePath, "utf8");
+  const { data, content } = matter(file);
 
-    return {
-      slug,
-      title: data.title,
-      date: data.date,
-      summary: data.summary,
-    };
-  });
+  const processed = await remark().use(html).process(content);
+  const contentHtml = processed.toString();
 
   return (
-    <main style={{ maxWidth: 720, margin: "80px auto", padding: "0 20px" }}>
-      <h1>Writing</h1>
+    <main
+      style={{
+        maxWidth: 720,
+        margin: "80px auto",
+        padding: "0 20px",
+        lineHeight: 1.9,
+        fontSize: 16,
+      }}
+    >
+      <h1 style={{ marginBottom: 8 }}>{data.title}</h1>
 
-      <p style={{ color: "#666", marginBottom: 40 }}>
-        生活记录 · 思考 · 长文
-      </p>
+      <div style={{ color: "#999", fontSize: 14, marginBottom: 40 }}>
+        {data.date}
+      </div>
 
-      {posts.map((post) => (
-        <article
-          key={post.slug}
-          style={{
-            marginBottom: 48,
-            paddingBottom: 24,
-            borderBottom: "1px solid #eee",
-          }}
-        >
-          <h2 style={{ marginBottom: 8 }}>
-            <a href={`/writing/${post.slug}`} style={{ color: "inherit" }}>
-              {post.title}
-            </a>
-          </h2>
-
-          <div style={{ fontSize: 14, color: "#999", marginBottom: 12 }}>
-            {post.date}
-          </div>
-
-          {post.summary && (
-            <p style={{ color: "#555" }}>{post.summary}</p>
-          )}
-        </article>
-      ))}
+      <article
+        dangerouslySetInnerHTML={{ __html: contentHtml }}
+      />
     </main>
   );
 }
+
