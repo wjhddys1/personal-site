@@ -1,0 +1,24 @@
+:root {
+  --bg: #ffffff;
+  --fg: rgba(0,0,0,.88);
+  --muted: rgba(0,0,0,.56);
+  --line: rgba(0,0,0,.10);
+  --shell: 920px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0b0c;
+    --fg: rgba(255,255,255,.88);
+    --muted: rgba(255,255,255,.56);
+    --line: rgba(255,255,255,.12);
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont,
+    "PingFang SC", "Microsoft YaHei", sans-serif;
+}
